@@ -1,48 +1,43 @@
-import { PRIORITIES, PRIORITY_DEFAULT } from "../../constants/priorities";
 import { useState } from "react";
-import styles from "./TodoListItem.module.css";
+import { useForm } from "react-hook-form";
+import { PRIORITIES, PRIORITY_DEFAULT } from "../../constants/priorities";
 import { TodoFormFields } from "../TodoFormFields/TodoFormFields";
+import styles from "./TodoListItem.module.css";
 
 export function TodoListItem({ todo, onUpdate, onDelete }) {
   const [isEditing, setIsEditing] = useState(false);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({ defaultValues: todo });
 
-  function handleCompleted(e) {
-    onUpdate(todo.id, { ...todo, completed: e.target.checked });
+  function handleCompleted(event) {
+    onUpdate(todo.id, { ...todo, completed: event.target.checked });
   }
 
-  function handleEdit(e) {
-    e.preventDefault();
-
-    const { elements } = e.target;
-
-    if (elements.name.value === "") return;
-
-    onUpdate(todo.id, {
-      name: elements.name.value,
-      description: elements.description.value,
-      deadline: elements.deadline.value,
-      priority: elements.priority.value,
-      completed: todo.completed,
-    });
-
+  function handleEdit(data) {
+    onUpdate(todo.id, data);
     setIsEditing(false);
   }
 
-  const viewingTemp = (
+  const viewingTemplate = (
     <div className={styles.Content}>
       <input
         type="checkbox"
         name="completed"
         checked={todo.completed}
-        className={styles.Status}
         onChange={handleCompleted}
+        className={styles.Status}
       />
+
       <div className={styles.Info}>
         {todo.name}
 
         {todo.description && (
-          <span className={styles.Description}>{todo.description} </span>
+          <span className={styles.Description}>{todo.description}</span>
         )}
+
         <div className={styles.AdditionalInfo}>
           {todo.deadline}{" "}
           {todo.priority !== PRIORITY_DEFAULT && (
@@ -53,30 +48,31 @@ export function TodoListItem({ todo, onUpdate, onDelete }) {
         </div>
       </div>
 
-      <div className={styles.controls}>
-        <button onClick={() => setIsEditing(!isEditing)}>📝</button>
+      <div className={styles.Controls}>
+        <button onClick={() => setIsEditing(true)}>📝</button>
         <button onClick={() => onDelete(todo.id)}>🗑️</button>
       </div>
     </div>
   );
 
-  const editingTemp = (
+  const editingTemplate = (
     <form
       className={styles.Content}
       onReset={() => setIsEditing(false)}
-      onSubmit={handleEdit}
+      onSubmit={handleSubmit(handleEdit)}
     >
-      <TodoFormFields todo={todo} />
+      <TodoFormFields todo={todo} register={register} errors={errors} />
 
-      <div className={styles.controls}>
+      <div className={styles.Controls}>
         <input type="submit" value="💾" />
-        <input type="submit" value="❌" />
+        <input type="reset" value="❌" />
       </div>
     </form>
   );
+
   return (
     <li className={styles.TodoListItem} data-completed={todo.completed}>
-      {isEditing ? editingTemp : viewingTemp}
+      {isEditing ? editingTemplate : viewingTemplate}
     </li>
   );
 }
