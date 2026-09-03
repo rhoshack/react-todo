@@ -52,3 +52,9 @@
 .Title button {
   align-self: center;
 }
+
+.FormFieldError {
+  padding-left: 9px;
+  font-size: 13px;
+  color: salmon;
+}
